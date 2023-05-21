@@ -107,7 +107,6 @@ def connect_onedrive(db: Session, user_id: str):
     response = requests.get("https://graph.microsoft.com/v1.0/",
                             headers={'Authorization': 'Bearer ' + local_tokens["current_token"]})
     response_status_code = response.status_code
-    print(json.loads(response.text))
     connection_onedrive_dict = {
         "connected": 0  # Connection Failed
     }
