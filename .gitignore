@@ -1,0 +1,7 @@
+.space
+.git
+.idea
+__pycache__
+.spaceignore
+Spacefile
+.env

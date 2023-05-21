@@ -1,0 +1,11 @@
+fastapi==0.95.2
+python-jose[cryptography]
+passlib[bcrypt]
+Pillow==9.5.0
+pydantic==1.10.7
+Requests==2.30.0
+SQLAlchemy==2.0.14
+starlette==0.27.0
+python-dotenv
+uvicorn
+mysql-connector-python
