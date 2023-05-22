@@ -3,6 +3,10 @@ from fastapi import FastAPI, Request, Depends
 from logic.token import oauth2_bearer, get_current_user_from_jwt_token
 from router import image, admin, login
 from starlette.middleware.cors import CORSMiddleware
+from db import sql_db
+from db.sql_db import engine
+
+sql_db.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(docs_url=None, redoc_url=None)
 app.include_router(image.router)

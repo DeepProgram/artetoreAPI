@@ -41,22 +41,6 @@ def add_image_info_in_database(db: Session, image_list, selected_group, folder_n
         db.add(image_db_data)
         db.commit()
         last_image_id += 1
-    #
-    # converted_groups_data = validate_image_path_and_get_converted_data(image_list, selected_group, last_group + 1)
-    # for group_key, group_data in converted_groups_data.items():
-    #     if group_key <= last_group:
-    #         last_image_id = get_group_last_image_id(db, group_key) + 1
-    #     else:
-    #         last_image_id = -1
-    #     for image_key, image_data in group_data.items():
-    #         if image_key == "folder_name":
-    #             continue
-    #         image_db_data = ImageDB(group_key, group_data["folder_name"],
-    #                                 image_key if last_image_id == -1 else last_image_id,
-    #                                 image_data["image_name"], image_data["title"],
-    #                                 image_data["high_res_image"], image_data["low_res_image"])
-    #         db.add(image_db_data)
-    # db.commit()
     return None
 
 

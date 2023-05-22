@@ -8,4 +8,5 @@ SQLAlchemy==2.0.14
 starlette==0.27.0
 python-dotenv
 uvicorn
+gunicorn
 mysql-connector-python
