@@ -1,3 +1,5 @@
+from typing import Union
+
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from db.db_models import ImageDB, OnedriveDB, UserDB
@@ -14,9 +16,11 @@ def get_last_group(db: Session):
 
 def get_group_list(db: Session):
     try:
-        group_list = db.query(ImageDB.image_group).group_by(ImageDB.image_group).all()
+        group_list = db.query(ImageDB.image_group, ImageDB.image_id, ImageDB.image_name).group_by(
+            ImageDB.image_group).all()
         group_list = list(map(lambda x: x[0], group_list))
-    except Exception:
+    except Exception as e:
+        print(e)
         group_list = []
     return group_list
 
@@ -25,6 +29,11 @@ def get_group_last_image_id(db: Session, group):
     last_image_id, = db.query(ImageDB.image_id).order_by(ImageDB.index.desc()).filter(
         ImageDB.image_group == group).first()
     return last_image_id
+
+
+def get_group_list_with_images_from_db(db: Session):
+    group_list = db.query(ImageDB.image_group, ImageDB.image_id, ImageDB.image_name).all()
+    return group_list
 
 
 def add_image_info_in_database(db: Session, image_list, selected_group, folder_name):
@@ -37,11 +46,16 @@ def add_image_info_in_database(db: Session, image_list, selected_group, folder_n
         image_db_data = ImageDB(selected_group, folder_name,
                                 last_image_id,
                                 image_info["file_name"], image_info["title"],
-                                image_info["high_res_image"], image_info["low_res_image"])
+                                image_info["low_res_image"], image_info["high_res_image"], image_info["full_image"])
         db.add(image_db_data)
         db.commit()
         last_image_id += 1
     return None
+
+
+def delete_image_from_database(db: Session, group_id, image_id):
+    db.query(ImageDB).filter(ImageDB.image_group == group_id, ImageDB.image_id == image_id).delete()
+    db.commit()
 
 
 def get_image_per_page(db: Session, page: int):
@@ -90,11 +104,24 @@ def get_image_from_group(db: Session, group):
 def get_one_image(db: Session, group: int, image_id: int):
     image_info = db.query(ImageDB.image_name, ImageDB.high_res_image).filter(ImageDB.image_group == group,
                                                                              ImageDB.image_id == image_id).first()
+    if image_info is None:
+        return None
     image_info_dict = {
         "imageName": image_info[0],
         "image": image_info[1]
     }
     return image_info_dict
+
+
+def download_full_image(db: Session, group_id: int, image_id: int):
+    full_image = db.query(ImageDB.image_name, ImageDB.full_image).filter(ImageDB.image_group == group_id,
+                                                     ImageDB.image_id == image_id).first()
+    if full_image is not None:
+        return {
+            "image_name": full_image[0],
+            "image": full_image[1]
+        }
+    return None
 
 
 def count_total_groups(db: Session):
@@ -138,9 +165,13 @@ def get_tokens_from_user_id(user_id: str, db: Session):
     return tokens[0], tokens[1]
 
 
-def get_low_res_image_from_db(db: Session, group_id: int):
+def get_low_res_image_from_db(db: Session, group_id: int, image_id: Union[int, None]):
     try:
-        image = db.query(ImageDB.low_res_image).filter(ImageDB.image_group == group_id).first()
+        if image_id is None:
+            image = db.query(ImageDB.low_res_image).filter(ImageDB.image_group == group_id).first()
+        else:
+            image = db.query(ImageDB.low_res_image).filter(ImageDB.image_group == group_id,
+                                                           ImageDB.image_id == image_id).first()
         image = image[0]
     except Exception:
         image = None

@@ -10,15 +10,17 @@ class ImageDB(Base):
     image_id = Column(Integer)
     image_name = Column(String)
     title = Column(String)
-    high_res_image = Column(String)
     low_res_image = Column(String)
+    high_res_image = Column(String)
+    full_image = Column(String)
 
-    def __init__(self, image_group, image_folder, image_id, image_name, title, high_res_image, low_res_image):
+    def __init__(self, image_group, image_folder, image_id, image_name, title, low_res_image, high_res_image, full_image):
         self.image_group = image_group
         self.image_folder = image_folder
         self.image_id = image_id
         self.image_name = image_name
         self.title = title
+        self.full_image = full_image
         self.high_res_image = high_res_image
         self.low_res_image = low_res_image
 

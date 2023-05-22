@@ -1,13 +1,15 @@
 import base64
 import io
 import json
-import os
+from typing import Union
+
 import requests
 from PIL import Image, ImageOps
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from crud import get_hashed_password_from_username, add_tokens_in_database, get_tokens_from_user_id, \
-    add_image_info_in_database, get_low_res_image_from_db
+    add_image_info_in_database, get_low_res_image_from_db, get_group_list_with_images_from_db, \
+    delete_image_from_database
 from logic.cryptography import verify_password
 from logic.token import create_jwt_access_token
 import os
@@ -284,14 +286,17 @@ def generate_image_dict_for_database(img_as_byte, file_name):
     low_res_image = change_image_resolution(img_as_byte, 180, 115)
     if low_res_image is None:
         return None
+    high_res_image = change_image_resolution(img_as_byte, 700, 525)
+    high_res_image_base64 = convert_image_into_base64(high_res_image)
     low_res_image_base64 = convert_image_into_base64(low_res_image)
-    high_res_image_base64 = convert_image_into_base64(img_as_byte)
+    full_image = convert_image_into_base64(img_as_byte)
     title = "This Is Sample Title"
     return {
         "title": title,
         "file_name": file_name,
         "low_res_image": low_res_image_base64,
-        "high_res_image": high_res_image_base64
+        "high_res_image": high_res_image_base64,
+        "full_image": full_image
     }
 
 
@@ -314,8 +319,34 @@ def convert_image_into_base64(image_as_byte):
     return base64_image_data
 
 
-def get_one_low_res_image_from_group(db: Session, group_id: int):
-    image = get_low_res_image_from_db(db, group_id)
+def get_one_low_res_image_from_group(db: Session, group_id: int, image_id: Union[int, None]):
+    image = get_low_res_image_from_db(db, group_id, image_id)
     if image is None:
         return 0, image
     return 1, image
+
+
+def get_group_list_with_images(db: Session):
+    group_list = get_group_list_with_images_from_db(db)
+    group_dict = {}
+    for data in group_list:
+        if group_dict.get(data[0]) is None:
+            group_dict[data[0]] = {
+                "images": [{
+                    "image_id": data[1],
+                    "image_name": data[2]
+                }]
+            }
+        else:
+            group_dict[data[0]]["images"].append({
+                "image_id": data[1],
+                "image_name": data[2]
+            })
+    return group_dict
+
+
+def delete_image(db: Session, image_list: dict):
+    for key, value in image_list.items():
+        for image in value:
+            delete_image_from_database(db, key, image["image_id"])
+    return 1

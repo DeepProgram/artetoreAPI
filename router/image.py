@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
+from starlette.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from db.sql_db import SessionLocal
-from crud import get_image_per_page, get_image_from_group, get_one_image, get_last_group
+from crud import get_image_per_page, get_image_from_group, get_one_image, get_last_group, download_full_image
 
 router = APIRouter(
     prefix="/image",
@@ -22,28 +23,51 @@ def get_db():
 @router.get("/")
 async def get_single_image(group: int, image_id: int, db: Session = Depends(get_db)):
     image_info = get_one_image(db, group, image_id)
-    return {
-        "data": image_info
-    }
+    if image_info is None:
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "code": 0,
+                "hint": "image_not_found"
+            }
+        )
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={
+            "code": 1,
+            "data": image_info,
+            "hint": 'image_found'
+        }
+    )
 
 
 @router.get("/page")
 async def get_image(page: int = 1, db: Session = Depends(get_db)):
     if page < 1:
-        return {
-            "status": 0,
-            "data": "positive invalid page.. dont try this again"
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "code": -1,
+                "hint": "positive invalid page.. dont try this again"
+            }
+        )
+    code, image_list = get_image_per_page(db, page)
+    if code == 0:
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "code": 0,
+                "hint": "database_empty"
+            }
+        )
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={
+            "code": 1,
+            "data": image_list,
+            "hint": "got_images"
         }
-    status, image_list = get_image_per_page(db, page)
-    if status == 0:
-        return {
-            "status": 0,
-            "data": "positive invalid page.. dont try this again"
-        }
-    return {
-        "status": 1,
-        "data": image_list
-    }
+    )
 
 
 @router.get("/group")
@@ -69,3 +93,24 @@ async def get_total_pages(db: Session = Depends(get_db)):
     return {
         "totalPage": pages
     }
+
+
+@router.get("/download")
+async def download_operation(group_id: int, image_id: int, db: Session = Depends(get_db)):
+    image = download_full_image(db, group_id, image_id)
+    if image is not None:
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "code": 1,
+                "image": image,
+                "hint": "image_found"
+            }
+        )
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={
+            "code": 0,
+            "hint": "image_not_found"
+        }
+    )

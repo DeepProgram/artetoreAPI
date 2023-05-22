@@ -1,3 +1,4 @@
+from typing import Union
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
@@ -5,7 +6,8 @@ from starlette.responses import JSONResponse
 from crud import get_group_list
 from logic.admin import generate_onedrive_auth_url, get_tokens_from_auth_code, connect_onedrive, get_folders, \
     rename_onedrive_item, create_folder_in_onedrive, delete_folder_from_onedrive, \
-    get_onedrive_uploading_session, add_image_in_database, get_one_low_res_image_from_group
+    get_onedrive_uploading_session, add_image_in_database, get_one_low_res_image_from_group, get_group_list_with_images, \
+    delete_image
 from logic.token import get_current_user_from_jwt_token, oauth2_bearer
 from schema import OnedriveAuth, AddImageList
 from router.image import get_db
@@ -208,11 +210,26 @@ async def add_image_in_database_operation(image_list: AddImageList, token: str =
         )
 
 
+@router.post("/delete/image")
+async def add_image_in_database_operation(image_list: AddImageList, token: str = Depends(oauth2_bearer),
+                                          db: Session = Depends(get_db)):
+    user_id = get_current_user_from_jwt_token(token)
+    result = delete_image(db, image_list.image_list)
+    if result == 1:
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "code": 1,
+                "hint": "image_deleted_from_database"
+            }
+        )
+
+
 @router.get("/image")
-async def get_single_image_from_group(group_id: int, token: str = Depends(oauth2_bearer),
+async def get_single_image_from_group(group_id: int, image_id: Union[int, None] = None, token: str = Depends(oauth2_bearer),
                                       db: Session = Depends(get_db)):
     user_id = get_current_user_from_jwt_token(token)
-    code, image = get_one_low_res_image_from_group(db, group_id)
+    code, image = get_one_low_res_image_from_group(db, group_id, image_id)
     if code == 1:
         return JSONResponse(
             status_code=status.HTTP_200_OK,
@@ -231,3 +248,23 @@ async def get_single_image_from_group(group_id: int, token: str = Depends(oauth2
     )
 
 
+@router.get("/groups/images")
+async def get_groups_with_images(token: str = Depends(oauth2_bearer),
+                                 db: Session = Depends(get_db)):
+    user_id = get_current_user_from_jwt_token(token)
+    result = get_group_list_with_images(db)
+    if result == {}:
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "code": 0,
+                "hint": "empty_database"
+            }
+        )
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={
+            "code": 1,
+            "data": result
+        }
+    )

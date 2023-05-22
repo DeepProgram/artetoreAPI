@@ -7,6 +7,6 @@ load_dotenv()
 
 SQL_ALCHEMY_URL = "sqlite:///sqlalchemy.sqlite.image.db"
 engine = create_engine(f"mysql+mysqlconnector://{os.getenv('db_username')}:{os.getenv('db_password')}@{os.getenv('host')}:{os.getenv('port')}"
-                       f"/imagedb", echo=True)
+                       f"/imagedb", echo=True, pool_size=15, max_overflow=30)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
