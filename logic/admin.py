@@ -153,6 +153,15 @@ def get_files_from_folder(item_id, db, user_id):
 
 def get_folders(db: Session, user_id):
     get_token_from_db(db, user_id)
+    folders_info_dict = {}
+    try:
+        response = json.loads(requests.get('https://graph.microsoft.com/v1.0/me/drive/', headers={'Authorization': 'Bearer ' + local_tokens["current_token"]}).text)
+        used = round(response['quota']['used'] / (1024 * 1024 * 1024), 2)
+        total = round(response['quota']['total'] / (1024 * 1024 * 1024), 2)
+        folders_info_dict["used_storage"] = used
+        folders_info_dict["total_storage"] = total
+    except Exception:
+        return 0, {}
     try:
         response = requests.get(
             f"https://graph.microsoft.com/v1.0/me/drive/items/{folder_arts_id}/children",
@@ -160,7 +169,7 @@ def get_folders(db: Session, user_id):
     except Exception:
         print("Couldn't Connect To Microsoft APi")
         return 0, {}
-    folders_info_dict = {}
+
     if response.status_code == 200:
         print("Response From Folder 1 200")
         try:
@@ -333,14 +342,16 @@ def get_group_list_with_images(db: Session):
         if group_dict.get(data[0]) is None:
             group_dict[data[0]] = {
                 "images": [{
-                    "image_id": data[1],
-                    "image_name": data[2]
+                    "folder_name": data[1],
+                    "image_id": data[2],
+                    "image_name": data[3]
                 }]
             }
         else:
             group_dict[data[0]]["images"].append({
-                "image_id": data[1],
-                "image_name": data[2]
+                "folder_name": data[1],
+                "image_id": data[2],
+                "image_name": data[3]
             })
     return group_dict
 

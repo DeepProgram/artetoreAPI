@@ -32,7 +32,7 @@ def get_group_last_image_id(db: Session, group):
 
 
 def get_group_list_with_images_from_db(db: Session):
-    group_list = db.query(ImageDB.image_group, ImageDB.image_id, ImageDB.image_name).all()
+    group_list = db.query(ImageDB.image_group, ImageDB.image_folder, ImageDB.image_id, ImageDB.image_name).all()
     return group_list
 
 
