@@ -64,7 +64,7 @@ def get_image_per_page(db: Session, page: int):
     start_group, end_group = 0, 0
 
     if ((page - 1) * 12) + 1 <= last_group:
-        start_group = ((page - 1) * 12) + 1
+        start_group = ((page - 1) * 12)
         if page * 12 >= last_group:
             end_group = last_group
         else:
@@ -74,7 +74,9 @@ def get_image_per_page(db: Session, page: int):
 
     image_list = []
     if status == 1:
-        for group_id in range(start_group, end_group + 1):
+        group_list = db.query(ImageDB.image_group).group_by(ImageDB.image_group).all()
+        group_list = list(map(lambda x: x[0], group_list))
+        for group_id in group_list[start_group:end_group]:
             group_first_image_data = db.query(ImageDB.image_group, ImageDB.image_name, ImageDB.low_res_image).filter(
                 ImageDB.image_group == group_id).first()
             image_list.append({

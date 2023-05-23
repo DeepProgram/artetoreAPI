@@ -155,12 +155,17 @@ def get_folders(db: Session, user_id):
     get_token_from_db(db, user_id)
     folders_info_dict = {}
     try:
-        response = json.loads(requests.get('https://graph.microsoft.com/v1.0/me/drive/', headers={'Authorization': 'Bearer ' + local_tokens["current_token"]}).text)
-        used = round(response['quota']['used'] / (1024 * 1024 * 1024), 2)
-        total = round(response['quota']['total'] / (1024 * 1024 * 1024), 2)
+        response = requests.get('https://graph.microsoft.com/v1.0/me/drive/', headers={'Authorization': 'Bearer ' + local_tokens["current_token"]})
+        if response.status_code == 401:
+            get_token_from_db(db, user_id)
+            return get_folders(db, user_id)
+        response_data = json.loads(response.text)
+        used = round(response_data['quota']['used'] / (1024 * 1024 * 1024), 2)
+        total = round(response_data['quota']['total'] / (1024 * 1024 * 1024), 2)
         folders_info_dict["used_storage"] = used
         folders_info_dict["total_storage"] = total
     except Exception:
+        print("Storage Info Fetching Exception")
         return 0, {}
     try:
         response = requests.get(
@@ -174,7 +179,6 @@ def get_folders(db: Session, user_id):
         print("Response From Folder 1 200")
         try:
             response_data = json.loads(response.text)
-
             for item in response_data["value"]:
                 if item.get("file") is not None:
                     continue
