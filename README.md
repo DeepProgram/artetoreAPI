@@ -60,7 +60,7 @@ To run this project, you will need to add the following environment variables to
             }
         }
     - **delete_image_in_database_operation** takes image_list, JWT token as input and return operation status
-        ```
+        ```json
         {
             "image_list":{
                 "17": [
