@@ -60,7 +60,7 @@ To run this project, you will need to add the following environment variables to
             }
         }
     - **delete_image_in_database_operation** takes image_list, JWT token as input and return operation status
-        ```json
+        ```
         {
             "image_list":{
                 "17": [
@@ -75,6 +75,36 @@ To run this project, you will need to add the following environment variables to
     - **get_single_image_from_group** takes group_id, image_id, JWT token and returns low resolution image
     - **get_groups_with_images** takes JWt token as input and returns all group lsit with images
 
+-
+    ### Logic [ cryptography ]
+    - **create_jwt_access_token** tkaes user_id, timedelta as input and generate a JWT andd returns it
+    - **get_current_user_from_jwt_token** takes token as input and validate it. If validation successful returns user_id else raise HTTP Error
+    - **get_password_hash** takes password as input and returns a encrypted password
+    - **verify_password** takes normal password and hashed password as input and validate it if both are same or not
+
+-
+    ### Logic [ admin ]
+    - **generate_onedrive_auth_url** generates onedrive authentication url using client id and client secret
+    - **process_token_from_response_data_and_add_in_db** takes response data that has refresh token and current token, user_id and add it to database
+    - **get_tokens_from_auth_code** takes auth_code, user_id as input and generate current_token and refresh token
+    - **verify_login** takes username and password as input and validate
+    - **get_new_token_from_refresh_token** takes refresh_token as input and genrate new current_token and refresh_token
+    - **get_token_from_db** takes user_id as input and get current_token and refresh_token from database and add it to local_token_dict
+    - **connect_onedrive** connects with onedrive and returns operation result
+    - **get_files_from_folder** takes onedrive folder_id as input and gets file_list of that folder
+    - **get_folders** scan arts_folder_id **[ From .env ]** and returns all folders and file list of all children folders
+    - **rename_onedrive_item** takes item_id, new_name as input and rename the file/folder name
+    - **create_folder_in_onedrive** takes folder_name as input and create new folder in ondedrive arts_folder_id
+    - **delete_folder_from_onedrive** takes folder_name as input and delete folder from ondedrive arts_folder_id
+    - **get_onedrive_uploading_session** takes folder_id, file_name as input and generate onedrive session url and returns it
+    - **download_image_content** takes file_id as input and download image on the server from onedrive
+    - **add_image_in_database** takes image_list as input and generate image_info_dict and add it to database
+    - **generate_image_dict_for_database** generate image_dict for database from byte image
+    - **change_image_resolution** takes image_data as input and returns custom resoution image
+    - **convert_image_into_base64** convert byte image to base64 image
+    - **get_one_low_res_image_from_group** takes group_id, image_id as input and get low resolution image from database
+    - **get_group_list_with_images** get image_list from databse for each group and returns data
+    - **delete_image** takes image_list as input and delete images from database
 ## Screenshots
 One Page Image List
 
