@@ -218,8 +218,8 @@ async def add_image_in_database_operation(image_list: AddImageList, token: str =
 
 
 @router.post("/delete/image")
-async def add_image_in_database_operation(image_list: AddImageList, token: str = Depends(oauth2_bearer),
-                                          db: Session = Depends(get_db)):
+async def delete_image_in_database_operation(image_list: AddImageList, token: str = Depends(oauth2_bearer),
+                                             db: Session = Depends(get_db)):
     user_id = get_current_user_from_jwt_token(token)
     result = delete_image(db, image_list.image_list)
     if result == 1:
@@ -233,7 +233,8 @@ async def add_image_in_database_operation(image_list: AddImageList, token: str =
 
 
 @router.get("/image")
-async def get_single_image_from_group(group_id: int, image_id: Union[int, None] = None, token: str = Depends(oauth2_bearer),
+async def get_single_image_from_group(group_id: int, image_id: Union[int, None] = None,
+                                      token: str = Depends(oauth2_bearer),
                                       db: Session = Depends(get_db)):
     user_id = get_current_user_from_jwt_token(token)
     code, image = get_one_low_res_image_from_group(db, group_id, image_id)
