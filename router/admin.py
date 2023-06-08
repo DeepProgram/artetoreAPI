@@ -208,6 +208,13 @@ async def add_image_in_database_operation(image_list: AddImageList, token: str =
                 "hint": "image_added_in_database"
             }
         )
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={
+            "code": 2,
+            "hint": "invalid image list"
+        }
+    )
 
 
 @router.post("/delete/image")

@@ -283,6 +283,7 @@ def download_image_content(db, user_id, file_id):
 
 
 def add_image_in_database(db: Session, user_id: str, image_list: dict):
+    found_valid_image = 0
     for folder_key, folder_value in image_list.items():
         all_images = []
         for image_info in folder_value["all_image_id"]:
@@ -290,9 +291,10 @@ def add_image_in_database(db: Session, user_id: str, image_list: dict):
             if image_data is not None:
                 image_dict = generate_image_dict_for_database(image_data, image_info["file_name"])
                 if image_data is not None:
+                    found_valid_image = 1
                     all_images.append(image_dict.copy())
         add_image_info_in_database(db, all_images, folder_value["group"], folder_value["folder_name"], )
-    return 1
+    return found_valid_image
 
 
 def generate_image_dict_for_database(img_as_byte, file_name):

@@ -42,7 +42,7 @@ async def get_single_image(group: int, image_id: int, db: Session = Depends(get_
 
 
 @router.get("/page")
-async def get_image(page: int = 1, db: Session = Depends(get_db)):
+async def get_whole_page_image(page: int = 1, db: Session = Depends(get_db)):
     if page < 1:
         return JSONResponse(
             status_code=status.HTTP_200_OK,
